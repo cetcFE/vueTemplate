@@ -1,34 +1,35 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo.png">
-    {{#router}}
-    <router-view/>
-    {{else}}
-    <HelloWorld/>
-    {{/router}}
+  <div>
+    <div>
+      <router-view/>
+    </div>
+
+    <jalert/>
+    <jconfirm/>
+    <loading/>
   </div>
 </template>
 
 <script>
-{{#unless router}}
-import HelloWorld from './components/HelloWorld'
-
-{{/unless}}
+import Jalert from '@/components/Jalert'
+import Jconfirm from '@/components/Jconfirm'
+import Loading from '@/components/Loading'
 export default {
-  name: 'App'{{#router}}{{else}},
+  name: 'App',
+  data () {
+    return {
+      defaultPage: false,
+      pageName: '首页'
+    }
+  },
   components: {
-    HelloWorld
-  }{{/router}}
+    Jalert,
+    Jconfirm,
+    Loading
+  }
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+@import "assets/css/message-box.css";
 </style>
