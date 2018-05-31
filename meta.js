@@ -52,11 +52,6 @@ module.exports = {
       message: 'Author',
     }
   },
-  filters: {
-    '.eslintrc.js': 'lint',
-    '.eslintignore': 'lint',
-    'src/router/**/*': 'router',
-  },
   complete: function(data, { chalk }) {
     const green = chalk.green
 
