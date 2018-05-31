@@ -50,40 +50,6 @@ module.exports = {
       when: 'isNotTest',
       type: 'string',
       message: 'Author',
-    },
-    build: {
-      when: 'isNotTest',
-      type: 'list',
-      message: 'Vue build',
-      choices: [
-        {
-          name: 'Runtime + Compiler: recommended for most users',
-          value: 'standalone',
-          short: 'standalone',
-        }
-      ],
-    },
-    router: {
-      when: 'isNotTest',
-      type: 'confirm',
-      message: 'Install vue-router?',
-    },
-    lint: {
-      when: 'isNotTest',
-      type: 'confirm',
-      message: 'Use ESLint to lint your code?',
-    },
-    lintConfig: {
-      when: 'isNotTest && lint',
-      type: 'list',
-      message: 'Pick an ESLint preset',
-      choices: [
-        {
-          name: 'Standard (https://github.com/standard/standard)',
-          value: 'standard',
-          short: 'Standard',
-        }
-      ],
     }
   },
   filters: {
