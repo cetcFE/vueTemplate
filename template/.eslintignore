@@ -2,6 +2,6 @@
 /config/
 /dist/
 /*.js
-{{#unit}}
-/test/unit/coverage/
-{{/unit}}
+/koa-server/
+/src/api/
+/static/

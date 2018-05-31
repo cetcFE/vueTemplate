@@ -9,7 +9,13 @@ spinner.start()
 rm('./static/assets', err => {
   if (err) throw err
   console.log(chalk.cyan('  old assets delete success.\n'))
-  travel('./demo/assets', './static/assets', 1)
+  fs.stat('./demo/assets', function (err, stats) {
+    if (err) {
+        spinner.stop()
+        return
+    }
+    travel('./demo/assets', './static/assets', 1)
+  })
 })
 
 function copy(src, dst) {
