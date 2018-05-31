@@ -89,7 +89,7 @@ let http = {
               var url = urlCreator.createObjectURL(blob)
               var link = document.createElement('a')
               link.setAttribute('href', url)
-              link.setAttribute('download', res.headers['x-filename'])
+              link.setAttribute('download', decodeURI(res.headers['x-filename']))
               var event = document.createEvent('MouseEvents')
               event.initMouseEvent('click', true, true, document.defaultView, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
               link.dispatchEvent(event)
