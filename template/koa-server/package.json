@@ -27,6 +27,8 @@
     "nodemon": "^1.11.0",
     "sha1": "^1.1.1",
     "supertest": "^2.0.1",
+    "mockjs": "^1.0.1-beta3",
+    "excel-export": "^0.5.1",
     "url": "^0.11.0"
   },
   "scripts": {
