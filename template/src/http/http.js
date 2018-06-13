@@ -28,8 +28,11 @@ let http = {
       store.commit('setJalertText', {text: '请填写api'})
     }
     uri = uri.indexOf('.json') > -1 ? '/static/jsons/' + uri + '?' : uri.indexOf('ws://') > -1 ? uri : project + '/' + uri
-    if (o.type !== 'post' && o.params.id) {
+    if (typeof o.params.id === 'number') {
       uri = uri + '/' + o.params.id
+    }
+    if (typeof o.params.eventId === 'number') {
+      uri = uri + '/' + o.params.eventId
     }
     if (o.type === 'get' && Object.keys(o.params).length > 0) {
       uri = uri + '?' + this.joinP(o.params)
@@ -42,7 +45,7 @@ let http = {
   joinP (o) {
     let x = []
     for (let i in o) {
-      if (i !== 'id') {
+      if (i !== 'id' || i !== 'eventId') {
         x.push(`${i}=${o[i]}`)
       }
     }
@@ -76,7 +79,6 @@ let http = {
       }
       if (o.headers) config.headers = Object.assign(config.headers, o.headers)
       if (o.config) config = Object.assign(config, o.config)
-      // config.params = o.params
       let instance = axios.create(config)
       let params = o.type === 'get' ? '' : o.params
       instance[o.type](this.getUrl(o), params).then((res) => {
@@ -113,9 +115,21 @@ let http = {
         }
 
         if (Number(res.data.status.code) === 200) {
-          resolve(res.data.data)
+          if (typeof res.data.data === 'string' && Number(res.data.data) === 0) {
+            let msg = '操作失败！'
+            reject(msg)
+          } else if (typeof res.data.data === 'string' && Number(res.data.data) === 1) {
+            let msg = '操作成功！'
+            store.commit('setJalertText', {
+              text: msg,
+              callback: () => {
+                resolve(res.data.data)
+              }
+            })
+          } else {
+            resolve(res.data.data)
+          }
         } else {
-          // reject(res.data.status.message)
           let msg = res.data.status.message ? res.data.status.message : '对不起，服务器接口出错！请联系技术人员！'
           reject(msg)
         }
