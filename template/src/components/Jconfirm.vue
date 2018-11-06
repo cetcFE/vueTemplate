@@ -21,7 +21,7 @@ export default {
       }).then(res => {
         self.status = false
         if (o.callback) o.callback()
-      }).catch(err => {
+      }).catch(() => {
         self.status = false
       })
     }
