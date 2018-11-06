@@ -5,7 +5,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import api from '@/api'
 import http from '@/http'
 import lib from '@/lib'
-import busx from '@/busx'
+import bus from '@/bus'
 import echarts from '@/lib/echarts'
 import directives from '@/directives'
 // 首页
@@ -19,7 +19,7 @@ Vue.prototype.$confirm = MessageBox.confirm
 Vue.use(api)
 Vue.use(http)
 Vue.use(lib)
-Vue.use(busx)
+Vue.use(bus)
 Vue.use(echarts)
 directives.init(Vue)
 

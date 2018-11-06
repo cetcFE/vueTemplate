@@ -162,7 +162,7 @@ let http = {
     myxhr.setRequestHeader('downloadapi', 'downloadapi')
     myxhr.responseType = o.headers.responseType
     myxhr.onreadystatechange = function () {
-      if (myxhr.readyState == 4) {
+      if (myxhr.readyState === 4) {
         if ((myxhr.status === 200 && myxhr.status < 300) || myxhr.status === 304) {
           var urlCreator = window.URL || window.webkitURL
           var blob = new Blob([myxhr.response], { type: myxhr.getResponseHeader('content-type') })
@@ -174,7 +174,7 @@ let http = {
           let attachment = myxhr.getResponseHeader('content-disposition')
           if (attachment) {
             originArray = attachment.split('=')
-            originName = decodeURI(originArray[originArray.length-1])
+            originName = decodeURI(originArray[originArray.length - 1])
           }
           if (o.params && o.params.fileName) {
             originName = o.params.fileName
