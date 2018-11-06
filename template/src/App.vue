@@ -1,19 +1,14 @@
 <template>
   <div>
-    <div>
-      <router-view/>
-    </div>
-
-    <jalert/>
-    <jconfirm/>
-    <loading/>
+    <router-view/>
+    <j-alert/>
+    <j-confirm/>
   </div>
 </template>
 
 <script>
-import Jalert from '@/components/Jalert'
-import Jconfirm from '@/components/Jconfirm'
-import Loading from '@/components/Loading'
+import JAlert from '@/components/JAlert'
+import JConfirm from '@/components/JConfirm'
 export default {
   name: 'App',
   data () {
@@ -23,9 +18,8 @@ export default {
     }
   },
   components: {
-    Jalert,
-    Jconfirm,
-    Loading
+    JAlert,
+    JConfirm
   }
 }
 </script>

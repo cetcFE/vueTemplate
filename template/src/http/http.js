@@ -22,6 +22,7 @@ let http = {
     return this.xhr(o)
   },
   getUrl (o) {
+    if (o.json) return o.json
     let uristr = this.getApi(o)
     let uriarr = uristr.split('?')
     let uri = uriarr[0]
@@ -46,9 +47,9 @@ let http = {
   getApi (o) {
     let uri = api.getURL(o.api)
     if (uri === undefined || uri === '') {
-      store.commit('setJalertText', {text: '请填写api'})
+      this.$root.$bus.$emit('alert', {text: '请填写api'})
     }
-    uri = uri.indexOf('.json') > -1 ? '/static/jsons/' + uri + '?' : uri.indexOf('ws://') > -1 ? uri : project + '/' + uri
+    uri = project + '/' + uri
     return uri
   },
   joinP (o) {
@@ -62,7 +63,7 @@ let http = {
     if (!o.token) {
       let token = store.getters.getToken
       if (!token) {
-        store.commit('setJalertText', {
+        this.$root.$bus.$emit('alert', {
           text: 'token丢失，请重新登录！',
           callback: () => {
             window.location.href = window.config.LOGIN_PAGE
@@ -77,28 +78,29 @@ let http = {
   xhr (o) {
     let self = this
     this.checkToken(o)
+    let config = {
+      headers: {
+        'Content-type': 'application/json;charset:utf-8',
+        'Authorization': o.token,
+        'timeout': o.timeout ? o.timeout : 30000
+      }
+    }
+    if (o.headers) config.headers = Object.assign(config.headers, o.headers)
+    if (o.config) config = Object.assign(config, o.config)
+    // config.params = o.params
+    let instance = axios.create(config)
+    let params = o.type === 'get' ? '' : o.params
+    if (o.headers && o.headers.responseType) {
+      this.downloadFile(o)
+      return
+    }
+    let url = this.getUrl(o)
     return new Promise((resolve, reject) => {
-      let config = {
-        headers: {
-          'Content-type': 'application/json;charset:utf-8',
-          'Authorization': o.token,
-          'timeout': o.timeout ? o.timeout : 30000
-        }
-      }
-      if (o.headers) config.headers = Object.assign(config.headers, o.headers)
-      if (o.config) config = Object.assign(config, o.config)
-      // config.params = o.params
-      let instance = axios.create(config)
-      let params = o.type === 'get' ? '' : o.params
-      if (o.headers && o.headers.responseType) {
-        this.downloadFile(o, resolve, reject)
-        return
-      }
-      instance[o.type](this.getUrl(o), params).then((res) => {
-        store.commit('hideLoading')
+      instance[o.type](url, params).then((res) => {
+        // store.commit('hideLoading')
         if (Number(res.data.status.code) === 401) {
           let msg = res.data.status.message ? res.data.status.message : '无访问权限，请重新登录！'
-          store.commit('setJalertText', {
+          self.$root.$bus.$emit('alert', {
             text: msg,
             callback: () => {
               window.sessionStorage.clear()
@@ -114,7 +116,7 @@ let http = {
             reject(msg)
           } else if (typeof res.data.data === 'string' && Number(res.data.data) === 1 && typeof o.confirm === 'undefined') {
             let msg = '操作成功'
-            store.commit('setJalertText', {
+            self.$root.$bus.$emit('alert', {
               text: msg,
               callback: () => {
                 resolve(res.data.data)
@@ -134,7 +136,7 @@ let http = {
         }
         if (err.message.indexOf('status code 401') > -1) {
           let msg = '无访问权限，请重新登录！'
-          store.commit('setJalertText', {
+          self.$root.$bus.$emit('alert', {
             text: msg,
             callback: () => {
               window.sessionStorage.clear()
@@ -153,7 +155,7 @@ let http = {
       })
     })
   },
-  downloadFile (o, resolve, reject) {
+  downloadFile (o) {
     var myxhr = new XMLHttpRequest()
     myxhr.open('get', this.getUrl(o))
     myxhr.setRequestHeader('Authorization', o.token)
@@ -181,9 +183,6 @@ let http = {
           var event = document.createEvent('MouseEvents')
           event.initMouseEvent('click', false, false, document.defaultView, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
           link.dispatchEvent(event)
-          resolve('200')
-        } else {
-          reject('404')
         }
       }
     }

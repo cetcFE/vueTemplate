@@ -1,39 +1,20 @@
 <script>
 export default {
   template: '<div/>',
-  computed: {
-    jconfirm () {
-      return this.$store.state.jconfirm
-    },
-    jconfirmTitle () {
-      return this.$store.state.jconfirm_title
-    },
-    jconfirmText () {
-      return this.$store.state.jconfirm_text
-    },
-    jconfirmCallback () {
-      return this.$store.state.jconfirm_callback
-    }
+  mounted() {
+    this.$bus.$on('confirm', this.init)
   },
   methods: {
-    init () {
+    init (o) {
       let self = this
-      this.$confirm(this.jconfirmText, this.jconfirmTitle, {
+      this.$confirm(o.text, o.title ? o.title : '提醒', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        self.$store.commit('hideJconfirm')
-        self.jconfirmCallback()
+      }).then((res) => {
+        if (o.callback) o.callback()
       }).catch(() => {
       })
-    }
-  },
-  watch: {
-    'jconfirm' (val, oldVal) {
-      if (val) {
-        this.init()
-      }
     }
   }
 }

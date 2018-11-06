@@ -15,7 +15,7 @@ let api = {
       'S_USERINFO': 'user/menu/user-info'
     }
 
-    return a[i]
+    return window.config.API_MAPPING(a[i])
   }
 }
 
