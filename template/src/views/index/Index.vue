@@ -84,6 +84,7 @@
 </template>
 
 <script>
+// import charts from '@/mixins/charts'
 export default {
   name: 'HelloWorld',
   data () {
@@ -91,6 +92,9 @@ export default {
       msg: 'Welcome to Your Vue.js App'
     }
   }
+  // mixins: [
+  //   charts
+  // ],
 }
 </script>
 
