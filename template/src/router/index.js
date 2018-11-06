@@ -5,7 +5,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import api from '@/api'
 import http from '@/http'
 import lib from '@/lib'
-import bus from '@/bus'
+import bus from '@/lib/bus'
 import echarts from '@/lib/echarts'
 import directives from '@/directives'
 // 首页
