@@ -3,7 +3,12 @@ var fs = require('fs')
 var os = require('os')
 
 module.exports = {
-  creatJson (url, data) {
+  creatJson(url, data) {
+    let obj = JSON.parse(data)
+    if (!obj.data) return false
+    if (obj.status.code != 200) return false
+    if (JSON.stringify(obj.data) === '{}') return false
+    if (obj.data instanceof Array && obj.data.length < 1) return false
     let urls = url.split('/')
     let ds = '/'
     if (os.platform() === 'win32') {
@@ -22,9 +27,11 @@ module.exports = {
         fs.mkdirSync(dir)
       }
     }
-    fs.writeFileSync(json, data, {encoding: 'utf-8'})
+    fs.writeFileSync(json, data, {
+      encoding: 'utf-8'
+    })
   },
-  readJson (url) {
+  readJson(url) {
     let ds = '/'
     if (os.platform() === 'win32') {
       ds = '\\'
@@ -41,9 +48,11 @@ module.exports = {
         data: 0
       })
     }
-    return fs.readFileSync(json, {encoding: 'utf-8'})
+    return fs.readFileSync(json, {
+      encoding: 'utf-8'
+    })
   },
-  creatFile (url, data, originName) {
+  creatFile(url, data, originName) {
     let urls = url.split('/')
     let ds = '/'
     if (os.platform() === 'win32') {
@@ -64,7 +73,9 @@ module.exports = {
         fs.mkdirSync(dir)
       }
     }
-    fs.writeFileSync(json, originName, {encoding: 'utf-8'})
+    fs.writeFileSync(json, originName, {
+      encoding: 'utf-8'
+    })
     let ws = fs.createWriteStream(filename)
     ws.once('open', function () {
       console.log('流打开了~~~')
@@ -75,7 +86,7 @@ module.exports = {
     ws.write(data)
     ws.end()
   },
-  readFile (url, res) {
+  readFile(url, res) {
     let ds = '/'
     if (os.platform() === 'win32') {
       ds = '\\'
@@ -92,7 +103,9 @@ module.exports = {
         data: 0
       })
     }
-    let filename = fs.readFileSync(json, {encoding: 'utf-8'})
+    let filename = fs.readFileSync(json, {
+      encoding: 'utf-8'
+    })
     if (!fs.existsSync(filename)) {
       return JSON.stringify({
         status: {
@@ -103,7 +116,9 @@ module.exports = {
       })
     }
     let rs = fs.createReadStream(filepath + url + '.' + filename)
-    res.writeHead(200, {'content-disposition': 'attachment;fileName=' + encodeURI(filename)})
+    res.writeHead(200, {
+      'content-disposition': 'attachment;fileName=' + encodeURI(filename)
+    })
     rs.once('open', function () {
       console.log('可读流已经打开')
     })

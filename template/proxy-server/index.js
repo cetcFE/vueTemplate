@@ -1,7 +1,7 @@
 var http = require('http'),
-httpProxy = require('http-proxy'),
-url = require('url'),
-lib = require('./lib')
+  httpProxy = require('http-proxy'),
+  url = require('url'),
+  lib = require('./lib')
 
 var proxy = httpProxy.createProxyServer({})
 var server = http.createServer(function (req, res) {
@@ -12,7 +12,9 @@ var server = http.createServer(function (req, res) {
     query.proxy = query.proxy.indexOf('http://') > -1 ? query.proxy : 'http://' + query.proxy
     target = query.proxy
   }
-  proxy.web(req, res, { target: target })
+  proxy.web(req, res, {
+    target: target
+  })
 })
 proxy.on('proxyRes', function (proxyRes, req, res) {
   var path = url.parse(req.url, true)
@@ -43,6 +45,9 @@ proxy.on('error', function (proxyRes, req, res) {
       lib.readFile(path.pathname, res)
     } else {
       var jsons = lib.readJson(path.pathname)
+      var obj = JSON.parse(jsons)
+      obj.origin = 'local json'
+      jsons = JSON.stringify(obj)
       res.end(jsons)
     }
   } catch (e) {
