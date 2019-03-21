@@ -22,6 +22,7 @@ let http = {
     return this.xhr(o)
   },
   getUrl (o) {
+    o.params = o.params ? o.params : {}
     if (o.json) return o.json
     let uristr = this.getApi(o)
     let uriarr = uristr.split('?')
@@ -47,7 +48,9 @@ let http = {
   getApi (o) {
     let uri = api.getURL(o.api)
     if (uri === undefined || uri === '') {
-      this.$root.$bus.$emit('alert', {text: '请填写api'})
+      this.$root.$bus.$emit('alert', {
+        text: '请填写api'
+      })
     }
     uri = project + '/' + uri
     return uri
@@ -77,17 +80,16 @@ let http = {
   },
   xhr (o) {
     let self = this
-    this.checkToken(o)
+    if (o.api !== 'S_LOGIN') this.checkToken(o)
     let config = {
       headers: {
         'Content-type': 'application/json;charset:utf-8',
-        'Authorization': o.token,
+        'Authorization': o.token ? o.token : '',
         'timeout': o.timeout ? o.timeout : 30000
       }
     }
     if (o.headers) config.headers = Object.assign(config.headers, o.headers)
     if (o.config) config = Object.assign(config, o.config)
-    // config.params = o.params
     let instance = axios.create(config)
     let params = o.type === 'get' ? '' : o.params
     if (o.headers && o.headers.responseType) {
@@ -95,10 +97,13 @@ let http = {
       return
     }
     let url = this.getUrl(o)
-    return new Promise((resolve, reject) => {
+    new Promise((resolve, reject) => {
       instance[o.type](url, params).then((res) => {
-        // store.commit('hideLoading')
-        if (Number(res.data.status.code) === 401) {
+        if (!res.data) {
+          let msg = '服务端没有返回！'
+          reject(msg)
+        }
+        if (Number(res.data.status.code) === 401 || Number(res.data.status.code) === 800) {
           let msg = res.data.status.message ? res.data.status.message : '无访问权限，请重新登录！'
           self.$root.$bus.$emit('alert', {
             text: msg,
@@ -111,30 +116,26 @@ let http = {
         }
 
         if (Number(res.data.status.code) === 200) {
-          if (typeof res.data.data === 'string' && Number(res.data.data) === 0 && typeof o.confirm === 'undefined') {
+          if ((typeof res.data.data === 'string' || typeof res.data.data === 'number') && Number(res.data.data) === 0 && typeof o.toast === 'undefined') {
             let msg = '操作失败'
             reject(msg)
-          } else if (typeof res.data.data === 'string' && Number(res.data.data) === 1 && typeof o.confirm === 'undefined') {
-            let msg = '操作成功'
-            self.$root.$bus.$emit('alert', {
-              text: msg,
-              callback: () => {
-                resolve(res.data.data)
-              }
+          } else if ((typeof res.data.data === 'string' || typeof res.data.data === 'number') && Number(res.data.data) === 1 && typeof o.toast === 'undefined') {
+            let msg = '恭喜你，操作成功'
+            self.$root.$message({
+              message: msg,
+              type: 'success',
+              customClass: 'custom-el-message'
             })
+            resolve(res.data.data)
           } else {
             resolve(res.data.data)
           }
         } else {
-          // reject(res.data.status.message)
           let msg = res.data.status.message ? res.data.status.message : '对不起，服务器接口出错！请联系技术人员！'
           reject(msg)
         }
       }).catch((err) => {
-        if (err.message.indexOf('status code 504') > -1) {
-          err.message = '请求超时,请重新请求！'
-        }
-        if (err.message.indexOf('status code 401') > -1) {
+        if (err.response.status === 401) {
           let msg = '无访问权限，请重新登录！'
           self.$root.$bus.$emit('alert', {
             text: msg,
@@ -145,13 +146,28 @@ let http = {
           })
           throw new Error('token无效，无访问权限！')
         }
-        if (err.message.indexOf('status code 400') > -1) {
-          err.message = '请求无效，请检查api是否正确！无效api为：' + self.getUrl(o)
-        }
-        if (err.message.indexOf('status code 404') > -1) {
-          err.message = '找不到页面，请检查api是否正确！无效api为：' + self.getUrl(o)
-        }
-        reject(err.message)
+        let msg = self.errMessage(err.response.status, url)
+        reject(msg)
+      })
+    }).then(res => {
+      if (o.callback) o.callback(res)
+    }, err => {
+      if (o.errCallback) {
+        o.errCallback(err)
+      }
+      if (typeof o.loading === 'object') {
+        o.loading.loading = false
+      }
+      let msg = ''
+      if (typeof err === 'string') {
+        msg = err
+      } else {
+        msg = err.message
+      }
+      self.$root.$message({
+        message: msg,
+        type: 'error',
+        customClass: 'custom-el-message'
       })
     })
   },
@@ -165,7 +181,9 @@ let http = {
       if (myxhr.readyState === 4) {
         if ((myxhr.status === 200 && myxhr.status < 300) || myxhr.status === 304) {
           var urlCreator = window.URL || window.webkitURL
-          var blob = new Blob([myxhr.response], { type: myxhr.getResponseHeader('content-type') })
+          var blob = new Blob([myxhr.response], {
+            type: myxhr.getResponseHeader('content-type')
+          })
           var url = urlCreator.createObjectURL(blob)
           var link = document.createElement('a')
           link.setAttribute('href', url)
@@ -187,6 +205,46 @@ let http = {
       }
     }
     myxhr.send()
+  },
+  errMessage (code, url) {
+    let message = '请求错误'
+    switch (code) {
+      case 400:
+        message = '请求错误'
+        break
+      case 401:
+        message = '未授权，请登录'
+        break
+      case 403:
+        message = '拒绝访问'
+        break
+      case 404:
+        message = `请求地址出错: ${url}`
+        break
+      case 408:
+        message = '请求超时'
+        break
+      case 500:
+        message = '服务器内部错误'
+        break
+      case 501:
+        message = '服务未实现'
+        break
+      case 502:
+        message = '网关错误'
+        break
+      case 503:
+        message = '服务不可用'
+        break
+      case 504:
+        message = '网关超时'
+        break
+      case 505:
+        message = 'HTTP版本不受支持'
+        break
+      default:
+    }
+    return message
   }
 }
 
